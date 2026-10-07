@@ -3,7 +3,7 @@
     <header class="page-head">
       <div>
         <h2>机坪安全管理</h2>
-        <p class="page-desc">维护机坪安全，围绕巡查编号、巡查区域、巡查人员、巡查日期做登记、筛选与状态流转。</p>
+        <p class="page-desc">维护机坪安全，围绕巡查编号、巡查区域、巡查人员、巡查日期做登记、筛选与状态流转；安全检查同步燃油确认待办。</p>
       </div>
       <div class="page-actions">
         <button class="btn primary" type="button" @click="openCreate">登记机坪安全</button>
@@ -23,6 +23,9 @@
         {{ item.status }}：{{ item.count }}
       </span>
     </p>
+
+    <!-- 其它入口的机坪安全检查：与航空加油同源的燃油确认待办，可直接复核确认。 -->
+    <ReviewQueue embedded default-status="已完成" />
 
     <form class="filter-bar" @submit.prevent="reload">
       <label v-for="field in filterFields" :key="field" class="filter-item">
@@ -80,6 +83,7 @@ import {
   runAction as applyAction,
 } from '@/api/local-service'
 import type { EntryRow } from '@/data/types'
+import ReviewQueue from '@/views/fueling/ReviewQueue.vue'
 
 const meta = moduleMeta('apron_safety')
 const columns = ["巡查编号", "巡查区域", "巡查人员", "巡查日期", "发现问题", "整改措施", "复查结果", "安全状态"]
