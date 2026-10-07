@@ -18,6 +18,29 @@
       </article>
     </div>
 
+    <!-- 同步航空加油的燃油确认待办：数据每次进入本页时实时从加油记录取，不在这里另存一份 -->
+    <section class="sync-panel">
+      <header class="sync-head">
+        <h3>燃油确认待办（同步航空加油复核队列）</h3>
+        <span class="sync-meta">
+          {{ fuelTodos.length ? `共 ${fuelTodos.length} 条待确认记录` : '当前没有待确认记录' }}
+        </span>
+      </header>
+      <ul v-if="fuelTodos.length" class="sync-list">
+        <li v-for="todo in fuelTodos" :key="todo.id" class="sync-item">
+          <span class="sync-no">{{ todo['加油编号'] }}</span>
+          <span class="sync-flight">{{ todo['关联航班'] }}</span>
+          <span class="sync-fuel">{{ todo['燃油型号'] }} · {{ todo['加油量'] }}</span>
+          <span class="sync-car">加油车 {{ todo['加油车号'] }}</span>
+          <span v-if="todo.diff" class="diff-badge">差异</span>
+          <RouterLink class="link sync-link" :to="{ path: '/fueling', query: { tab: 'review', focus: todo.id } }">
+            去确认
+          </RouterLink>
+        </li>
+      </ul>
+      <p v-else class="sync-empty">已完成加油的记录都复核闭环，暂无待办</p>
+    </section>
+
     <p class="status-legend">
       <span v-for="item in statusSummary" :key="item.status" class="legend-item">
         {{ item.status }}：{{ item.count }}
@@ -76,10 +99,11 @@ import { computed, onMounted, ref } from 'vue'
 import {
   downloadEntries,
   listEntries,
+  listFuelingConfirmTodos,
   moduleMeta,
   runAction as applyAction,
 } from '@/api/local-service'
-import type { EntryRow } from '@/data/types'
+import type { EntryRow, FuelingTodo } from '@/data/types'
 
 const meta = moduleMeta('apron_safety')
 const columns = ["巡查编号", "巡查区域", "巡查人员", "巡查日期", "发现问题", "整改措施", "复查结果", "安全状态"]
@@ -92,6 +116,7 @@ const total = ref(0)
 const errorMessage = ref('')
 const filters = ref<Record<string, string>>({})
 const filterFields = columns.slice(0, 3)
+const fuelTodos = ref<FuelingTodo[]>([])
 const statusSummary = computed(() =>
   statuses.map((status: string) => ({
     status,
@@ -128,6 +153,7 @@ function reload() {
     const payload = listEntries(meta.key, filters.value)
     rows.value = payload.items
     total.value = payload.total
+    fuelTodos.value = listFuelingConfirmTodos()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '机坪安全列表读取失败'
   }

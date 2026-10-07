@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "vue-tsc --noEmit"
+    "typecheck": "vue-tsc --noEmit",
+    "smoke:fueling": "node -e \"require('esbuild').build({entryPoints:['scripts/smoke-fueling.ts'],bundle:true,platform:'node',format:'esm',alias:{'@':require('path').resolve('src')},outfile:'node_modules/.cache/smoke-fueling.mjs'}).then(()=>console.log('bundled'))\" && node node_modules/.cache/smoke-fueling.mjs"
   },
   "dependencies": {
     "pinia": "^2.1.7",
